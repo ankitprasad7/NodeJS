@@ -5,26 +5,19 @@ var lastuserid;
 let books=[];
 const userPath = path.join(__dirname, "..", "/files/users.json");
 
-readUser();
 
-function readUser() {
+
+function getdata() {
   fs.readFile(userPath, "utf-8", function (error, data) {
     if (error) {
       return console.error(error);
     }
     users = JSON.parse(data);
+    res.status(200).send(data);
+
   });
 }
 
-function getdata(req, res, next) {
-  fs.readFile(userPath, "utf-8", function (err, data) {
-    if (err) {
-      return res.status(404, err);
-    }
-    console.log(data);
-    res.status(200).send(data);
-  });
-}
 
 function writeData(data) {
   fs.writeFile(userPath, JSON.stringify(data), function (error) {
