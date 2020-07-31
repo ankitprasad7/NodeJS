@@ -1,22 +1,26 @@
 const fs = require("fs");
 const path = require("path");
 let users = [];
-var lastuserid;
+var lastuserid=0;
 let books=[];
 const userPath = path.join(__dirname, "..", "/files/users.json");
 
+readUser();
 
-
-function getdata() {
+function readUser() {
   fs.readFile(userPath, "utf-8", function (error, data) {
     if (error) {
       return console.error(error);
     }
     users = JSON.parse(data);
-    res.status(200).send(data);
-
+    
   });
 }
+
+function getdata(req, res, next) {
+  
+    res.status(200).send(users);
+  }
 
 
 function writeData(data) {
@@ -27,13 +31,13 @@ function writeData(data) {
   });
 }
 
-function writeUser() {
+function writeUser(req,res,next) {
   let user = req.body;
   user.id = (++lastuserid).toString();
   users.push(user);
   writeData(users);
   res.send(201, users);
-  next();
+  console.log(user,users);
 }
 
 function updateData(req, res, next) {
