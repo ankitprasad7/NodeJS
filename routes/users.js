@@ -1,15 +1,12 @@
 var express = require('express');
 var router = express.Router();
-const test =require('../Modules/userModule');
+const users =require('../Modules/userModule');
 
-router.get('/', test.getdata);
-router.post('/',test.writeUser);
-router.put('/:id', test.updateData);
-router.delete('/:id',test.delData);
+router.get('/', users.getUsers);
+router.post('/',users.addUser);
+router.put('/:id', users.updateUser);
+router.patch('/:id', users.updateUserPatch);
+router.delete('/:id',users.deleteUser);
 
-router.get("/:id/books", test.getBooks);
-router.post("/:id/books", test.addBooks)
-router.put("/:id/books", test.updateBooks);
-router.delete("/:id/books", test.delBooks);
 module.exports = router;
 
