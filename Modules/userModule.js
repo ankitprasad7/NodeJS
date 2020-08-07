@@ -3,18 +3,7 @@ const bcrypt = require("bcrypt");
 const saltRounds = 10;
 const jwt = require("jsonwebtoken");
 
-async function checkUserExists(value) {
-  const user=userModel.find({ email: value }, (err, data) => {
-    if (err) {
-      return res.status(401, err);
-    }
-    return user.length;
-  });
-}
-function passCheck(userpassword, dbpassword) {
-  var comparepass = bcrypt.compare(userpassword, dbpassword);
-  return comparepass;
-}
+
 
 function registerUser(req, res, next) {
   let user = req.body;
@@ -30,56 +19,47 @@ function login() {
   return async function (req, res, next) {
     const email = req.body.email;
     const pass = req.body.password;
-   const userExists = await checkUserExists(email);
-    if (!userExists) {
-      return res.send(404, { message: "Email address not found" });
-    }
-    const user = await userModel.findOne({ email: email }, (err, data) => {
+
+    const user = await userModel.findOne({ email: email });
+    if (!user) return res.status(404, { message: "user not found" });
+    bcrypt.compare(pass, user.password, function (err, result) {
       if (err) {
-        return res.status(401, err);
+        res.send(404, "incomplete data");
+      }
+      if (result == false) {
+        return res.send("invalid credentials");
+      } else {
+        var token = jwt.sign({ ...user, _id: user._id.toString() }, "shhhhh", {
+          expiresIn: "100000ms",
+        });
+        console.log(user._id);
+        return res.status(200).send({ message: "User has logged in ", token: token });
       }
     });
-    var comparepass = await passCheck(req.body.password, user.password).catch(
-      (err) => {
-        if (err) {
-          return res.send(500);
-        }
-      }
-    );
-    if (comparepass) {
-      //req.session.save();
-      //req.session.userId = user.id;
-
-      var exp = "60s";
-      var token = jwt.sign(
-        {
-          id: user.id,
-          email: user.email,
-        },
-        "shhhhh",
-        { expiresIn: exp }
-      );
-      res.send(200, {
-        message: "Successfully Login",
-        Access_Token: token,
-      });
-    } else {
-      res.send(401, {
-        message: "Invalid Password",
-      });
-    }
   };
 }
+async function showUser(req, res) {
+  let user = req.body;
+  const userId = req.params.id;
+  const response = await userModel.findById(userId, user);
+  if (!response) {
+      res.send(404, "user not found");
+  }
+   //req.session.user = response;
+   res.status(200).send(response);
 
+}
 function updateUser() {
   return async function (req, res, next) {
     const userId = req.params.id;
     let user = req.body;
-    await userModel.findByIdAndUpdate(userId, user, (err, data) => {
+    const response=await userModel.findByIdAndUpdate(userId, user, (err, data) => {
       if (err) {
         console.log(err);
+        res.status(404,{message:'user not found'});
       }
-      res.status(200).send("updated");
+       //req.session.user = response;
+      res.status(200).send(data);
     });
   };
 }
@@ -87,8 +67,9 @@ function updateUser() {
 function deleteUser() {
   return async function (req, res, next) {
     const userId = req.params.id;
-    await userModel.findByIdAndDelete(userId);
-    res.status(201).send({ message: "User deleted" });
+    const response=await userModel.findByIdAndDelete(userId);
+     //req.session.user = response;
+     res.status(201).send({ message: "User deleted" });
   };
 }
 
@@ -97,4 +78,5 @@ module.exports = {
   login,
   updateUser,
   deleteUser,
+showUser
 };

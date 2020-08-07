@@ -28,6 +28,7 @@ app.use(session({secret : 'max', saveUninitialized : false, resave : false}));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+
 app.use(helmet());
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
