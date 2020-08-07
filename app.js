@@ -3,7 +3,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-
+const session = require('express-session');
 
 const mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost:27017/test', {useNewUrlParser: true,useUnifiedTopology: true});
@@ -11,6 +11,7 @@ mongoose.connect('mongodb://localhost:27017/test', {useNewUrlParser: true,useUni
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+const helmet = require('helmet');
 
 var app = express();
 
@@ -23,14 +24,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(session({secret : 'max', saveUninitialized : false, resave : false}));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-
+app.use(helmet());
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
 });
+
+
 
 // error handler
 app.use(function(err, req, res, next) {
